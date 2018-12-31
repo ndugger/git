@@ -37,14 +37,12 @@ namespace git {
                 git_strarray names({ nullptr });
 
                 git_remote_list(&names, repository_c_obj);
-
                 remotes.reserve(names.count);
 
                 for (const std::string& name : std::vector<std::string>(names.strings, names.strings + names.count)) {
                     git::remote remote(repository_c_obj);
 
                     git_remote_lookup(remote.c_obj(), repository_c_obj, name.c_str());
-
                     remotes.emplace_back(remote);
                 }
 
