@@ -1,0 +1,40 @@
+#                                _
+#                               //
+#       ____    ____   ____    //
+#      //  \\  //  \\ //  \\  //___
+#     //   // //     //   // //\\
+#    //   // //     //   // //  \\
+#    \\__// //      \\__// //    \\
+#       //  PACKAGE MANAGER
+#  \\__//
+
+project(git)
+
+set(CMAKE_CXX_STANDARD "17")
+
+add_executable(git example/main.cpp)
+
+# ==========: git :==========
+# - includes:
+include_directories("/home/nick/Projects/fyrware/git/.")
+# - libraries
+add_library(git2 SHARED IMPORTED)
+set_target_properties(git2 PROPERTIES IMPORTED_LOCATION "/home/nick/Projects/fyrware/git/.grok/c/git2/build/libgit2.so")
+target_link_libraries(git git2)
+
+#                                _
+#                               //
+#       ____    ____   ____    //
+#      //  \\  //  \\ //  \\  //___
+#     //   // //     //   // //\\
+#    //   // //     //   // //  \\
+#    \\__// //      \\__// //    \\
+#       //  PACKAGE MANAGER
+#  \\__//
+
+# ==========: git2 :==========
+# - includes:
+include_directories("/home/nick/Projects/fyrware/git/.grok/c/git2/include")
+# - libraries
+target_link_libraries(git2)
+

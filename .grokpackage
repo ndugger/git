@@ -1,0 +1,28 @@
+{
+    "dependencies": {
+        "c/git2": "master"
+    },
+    "executables": [
+        "example/main.cpp"
+    ],
+    "flags": [],
+    "includes": [
+        "."
+    ],
+    "libraries": {
+        "git2": ".grok/c/git2/build/libgit2.so"
+    },
+    "package": {
+        "contributors": [
+            "Nick Dugger"
+        ],
+        "license": "MIT",
+        "name": "git",
+        "release": "master",
+        "repository": "https://github.com/fyrware/git.git",
+        "standard": "17"
+    },
+    "scripts": {
+        "use": "echo \"script ran for 'git'\""
+    }
+}
