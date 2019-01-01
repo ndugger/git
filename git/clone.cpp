@@ -13,9 +13,8 @@ namespace git {
 
     git::repository clone (const std::string& remote, const std::string& path, git_clone_options options = GIT_CLONE_OPTIONS_INIT) {
         git::repository repository(git::manager::create<git::repository>());
-        git_repository* c_repository(git::manager::c_obj<git::repository, git_repository*>(repository));
 
-        git_clone(&c_repository, remote.c_str(), path.c_str(), &options);
+        git_clone(git::manager::c_obj<git::repository, git_repository**>(repository), remote.c_str(), path.c_str(), &options);
 
         return repository;
     }

@@ -40,8 +40,8 @@ namespace git {
         protected:
             explicit repository () : repository_c_obj(nullptr) { }
 
-            git_repository* c_obj () {
-                return repository_c_obj;
+            git_repository** c_obj () {
+                return &repository_c_obj;
             }
 
         public:
@@ -73,18 +73,18 @@ namespace git {
                 return tree;
             }
 
-            git::branch branch (const std::string& branch_name) {
-                return git::branch(repository_c_obj, branch_name, false);
+            git::branch branch (const std::string& name) {
+                return git::manager::lookup<git::branch>(git::manager::create<git::branch>(name, false), &repository_c_obj);
             }
 
-            git::remote remote (const std::string& remote_name) {
+            git::remote remote (const std::string& name) {
                 git_strarray names({ nullptr });
 
                 git_remote_list(&names, repository_c_obj);
 
-                for (const std::string& name : std::vector<std::string>(names.strings, names.strings + names.count)) {
-                    if (remote_name == name) {
-                        return git::remote(repository_c_obj, name);
+                for (const std::string& string : std::vector<std::string>(names.strings, names.strings + names.count)) {
+                    if (name == string) {
+                        return git::manager::create<git::remote>(name);
                     }
                 }
             }
@@ -94,7 +94,7 @@ namespace git {
                 const git_annotated_commit* the_head[ 10 ];
                 git_index* the_index = nullptr;
 
-                git_annotated_commit_from_ref((git_annotated_commit**)&the_head[ 0 ], repository_c_obj, branch.c_obj());
+                git_annotated_commit_from_ref((git_annotated_commit**)&the_head[ 0 ], repository_c_obj, git::manager::c_obj<git::branch, git_reference*>(branch));
                 git_merge(repository_c_obj, the_head, 1, &options, &checkout_options);
 
                 git::commit commit_head(git::manager::lookup<git::commit>(git::manager::create<git::commit>(), repository_c_obj));
