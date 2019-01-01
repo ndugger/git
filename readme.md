@@ -13,32 +13,5 @@ It's a good thing, mostly, but we want to ramp developers up for that; the deep 
 For that reason, I've decided to write an OOP-ish wrapper around libgit2 with C++ and its STL.
 
 ### how?
-```cpp
-# include "git/clone.cpp"
-# include "git/commit.cpp"
-# include "git/init.cpp"
-# include "git/tree.cpp"
-# include "git/open.cpp"
-# include "git/remote.cpp"
-# include "git/repository.cpp"
-# include "git/util.cpp"
-
-int main () {
-    git::util::initialize();
-
-    git::repository repository_cloned(git::clone("https://address/to/repository.git", "/path/to/directory/"));
-    git::branch branch_local_master(repository_cloned.branch("master"));
-
-    repository_cloned.set_head(branch_local_master);
-
-    git::remote remote_origin(repository_cloned.remote("origin"));
-
-    remote_origin.fetch();
-
-    git::branch branch_origin_master(remote_origin.branch("master"));
-
-    repository_cloned.merge(branch_origin_master);
-
-    git::util::uninitialize();
-}
-```
+[example/main.cpp](https://github.com/fyrware/git/blob/master/example/main.cpp)
+![](https://i.imgur.com/BZfr4YM.png)
