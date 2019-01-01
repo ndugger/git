@@ -13,16 +13,9 @@ It's a good thing, mostly, but we want to ramp developers up for that; the deep 
 For that reason, I've decided to write an OOP-ish wrapper around libgit2 with C++ and its STL.
 
 ### how?
-```cpp
-# include "git/clone.cpp"
-# include "git/commit.cpp"
-# include "git/init.cpp"
-# include "git/tree.cpp"
-# include "git/open.cpp"
-# include "git/remote.cpp"
-# include "git/repository.cpp"
-# include "git/util.cpp"
+![](https://i.imgur.com/BZfr4YM.png)
 
+```cpp
 int main () {
     git::util::initialize();
 
