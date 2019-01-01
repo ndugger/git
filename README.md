@@ -1,5 +1,5 @@
 # git
-C++ Wrapper Around libgit2
+C++ Wrapper Around [libgit2](https://github.com/libgit2/libgit2)
 
 ### where?
 ```
