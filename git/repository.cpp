@@ -7,6 +7,7 @@
 # include <vector>
 
 # include "git2/checkout.h"
+# include "git2/index.h"
 # include "git2/merge.h"
 # include "git2/object.h"
 # include "git2/oid.h"
@@ -21,6 +22,8 @@
 # include "git/branch.cpp"
 # include "git/commit.cpp"
 # include "git/index.cpp"
+# include "git/manager.cpp"
+# include "git/object.cpp"
 # include "git/options.cpp"
 # include "git/remote.cpp"
 # include "git/signature.cpp"
@@ -28,35 +31,20 @@
 
 namespace git {
 
-    class repository {
+    class repository : protected git::object {
+        friend class git::manager;
 
         private:
             git_repository* repository_c_obj;
-            std::string repository_path;
+
+        protected:
+            explicit repository () : repository_c_obj(nullptr) { }
+
+            git_repository* c_obj () {
+                return repository_c_obj;
+            }
 
         public:
-            explicit repository (const std::string& path) : repository_c_obj(nullptr), repository_path(path) { }
-
-            git_repository** c_obj () {
-                return &repository_c_obj;
-            }
-
-            std::string& path () {
-                return repository_path;
-            }
-
-            git::index index () {
-
-            }
-
-            git::commit last_commit () {
-                git::commit commit;
-
-                git_commit_lookup(commit.c_obj(), repository_c_obj, *(commit.id()));
-
-                return commit;
-            }
-
             void set_head (git::branch branch) {
                 git_repository_set_head(repository_c_obj, branch.name().c_str());
             }
@@ -103,31 +91,38 @@ namespace git {
 
             git::commit merge (git::branch& branch, git_merge_options options = GIT_MERGE_OPTIONS_INIT) {
                 git_checkout_options checkout_options = GIT_CHECKOUT_OPTIONS_INIT;
-                const git_annotated_commit* their_head[ 10 ];
+                const git_annotated_commit* the_head[ 10 ];
+                git_index* the_index = nullptr;
 
-                git_annotated_commit_from_ref((git_annotated_commit**)&their_head[ 0 ], repository_c_obj, branch.c_obj());
-                git_merge(repository_c_obj, their_head, 1, &options, &checkout_options);
+                git_annotated_commit_from_ref((git_annotated_commit**)&the_head[ 0 ], repository_c_obj, branch.c_obj());
+                git_merge(repository_c_obj, the_head, 1, &options, &checkout_options);
 
-                git::commit commit("merge");
-                git::index current_index(index());
-                git::signature me("name", "email@address");
-                git::tree new_tree;
+                git::commit commit_head(git::manager::lookup<git::commit>(git::manager::create<git::commit>(), repository_c_obj));
+                git::commit commit_new(git::manager::create<git::commit>("merged"));
+                git::signature signature_me(git::manager::create<git::signature>("name", "email@address"));
+                git::tree tree_new(git::manager::create<git::tree>());
 
-                git_index_write_tree(new_tree.id(), current_index.c_obj());
-                git_tree_lookup((git_tree**)new_tree.c_obj(), repository_c_obj, new_tree.id());
+                git_repository_index(&the_index, repository_c_obj);
+                git_checkout_index(repository_c_obj, the_index, &checkout_options);
+                git_index_update_all(the_index, nullptr, nullptr, nullptr);
+                git_index_write(the_index);
+                git_index_write_tree(*(tree_new.id()), the_index);
+                git_tree_lookup((git_tree**)tree_new.c_obj(), repository_c_obj, *(tree_new.id()));
                 git_commit_create_v(
-                    (git_oid*)commit.id(),
+                    (git_oid*)commit_new.id(),
                     repository_c_obj,
                     branch.name().c_str(),
-                    me.c_obj(),
-                    me.c_obj(),
+                    git::manager::c_obj<git::signature, git_signature*>(signature_me),
+                    git::manager::c_obj<git::signature, git_signature*>(signature_me),
                     "UTF-8",
-                    commit.message().c_str(),
-                    new_tree.c_obj(),
+                    commit_new.message().c_str(),
+                    git::manager::c_obj<git::tree, git_tree*>(tree_new),
                     2,
-                    commit.c_obj(),
-                    last_commit().c_obj()
+                    git::manager::c_obj<git::commit, git_commit*>(commit_new),
+                    git::manager::c_obj<git::commit, git_commit*>(commit_head)
                 );
+
+                return commit_new;
             }
     };
 }

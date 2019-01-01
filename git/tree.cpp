@@ -13,9 +13,9 @@ namespace git {
             git_object* tree_tree_ish;
 
         public:
-            explicit tree () : tree_c_obj(nullptr), tree_tree_ish(nullptr) { }
+            explicit tree () : tree_c_obj(nullptr), tree_id(nullptr), tree_tree_ish(nullptr) { }
 
-            const git_tree* c_obj () {
+            git_tree* c_obj () {
                 return tree_c_obj;
             }
 
@@ -23,8 +23,8 @@ namespace git {
                 return &tree_tree_ish;
             }
 
-            git_oid* id () {
-                return tree_id;
+            git_oid** id () {
+                return &tree_id;
             }
     };
 }

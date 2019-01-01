@@ -4,14 +4,15 @@
 # include "git/clone.cpp"
 # include "git/commit.cpp"
 # include "git/init.cpp"
-# include "git/tree.cpp"
+# include "git/manager.cpp"
 # include "git/open.cpp"
 # include "git/remote.cpp"
 # include "git/repository.cpp"
+# include "git/tree.cpp"
 # include "git/util.cpp"
 
 int main () {
-    git::util::initialize();
+    git::manager::init();
 
     git::repository repository_cloned(git::clone("https://github.com/fyrware/git.git", "/home/nick/Projects/fyrware/git/ignore/git/"));
     git::branch branch_local_master(repository_cloned.branch("master"));
@@ -26,5 +27,5 @@ int main () {
 
     repository_cloned.merge(branch_origin_master);
 
-    git::util::uninitialize();
+    git::manager::clean_up();
 }

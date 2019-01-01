@@ -16,7 +16,7 @@ namespace git {
                 git_signature_now(&signature_c_obj, name.c_str(), email.c_str());
             }
 
-            const git_signature* c_obj () {
+            git_signature* c_obj () {
                 return signature_c_obj;
             }
     };

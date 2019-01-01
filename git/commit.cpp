@@ -8,22 +8,32 @@
 # include "git2/refs.h"
 # include "git2/repository.h"
 
+# include "git/manager.cpp"
+# include "git/object.cpp"
+
 namespace git {
 
-    class commit {
+class commit : protected git::object {
+        friend class git::manager;
 
         private:
             git_commit* commit_c_obj;
             const git_oid* commit_id;
             std::string commit_message;
 
-        public:
-            explicit commit (const std::string& message = "") : commit_c_obj(nullptr), commit_id(nullptr), commit_message(message) { }
+        protected:
+            explicit commit (const std::string& message = "") : commit_c_obj(nullptr), commit_id(nullptr) { }
 
-            git_commit** c_obj () {
-                return &commit_c_obj;
+            commit& lookup (git_repository* c_repository) {
+                git_commit_lookup(&commit_c_obj, c_repository, commit_id);
+                return *this;
             }
 
+            git_commit* c_obj () {
+                return commit_c_obj;
+            }
+
+        public:
             const git_oid** id () {
                 return &commit_id;
             }
