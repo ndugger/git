@@ -3,6 +3,7 @@
 
 # include "git/clone.cpp"
 # include "git/init.cpp"
+# include "git/object.cpp"
 # include "git/open.cpp"
 # include "git/remote.cpp"
 # include "git/repository.cpp"

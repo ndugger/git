@@ -14,10 +14,7 @@ namespace git {
             git_repository* remote_c_repository_obj;
 
         public:
-            explicit remote (git_repository* repository) {
-                remote_c_obj = nullptr;
-                remote_c_repository_obj = repository;
-            }
+            explicit remote (git_repository* repository) : remote_c_obj(nullptr), remote_c_repository_obj(repository) { }
 
             git_remote** c_obj () {
                 return &remote_c_obj;
