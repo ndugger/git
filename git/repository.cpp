@@ -19,10 +19,7 @@ namespace git {
             std::string repository_path;
 
         public:
-            explicit repository (const std::string& path) {
-                repository_c_obj = nullptr;
-                repository_path = path;
-            }
+            explicit repository (const std::string& path) : repository_c_obj(nullptr), repository_path(path) { }
 
             git_repository** c_obj () {
                 return &repository_c_obj;
