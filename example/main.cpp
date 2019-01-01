@@ -2,8 +2,9 @@
 # include <string>
 
 # include "git/clone.cpp"
+# include "git/commit.cpp"
 # include "git/init.cpp"
-# include "git/object.cpp"
+# include "git/tree.cpp"
 # include "git/open.cpp"
 # include "git/remote.cpp"
 # include "git/repository.cpp"
@@ -12,13 +13,18 @@
 int main () {
     git::util::initialize();
 
-    git::repository cloned(git::clone("https://github.com/fyrware/git.git", "/home/nick/Projects/fyrware/git/ignore/git/"));
+    git::repository repository_cloned(git::clone("https://github.com/fyrware/git.git", "/home/nick/Projects/fyrware/git/ignore/git/"));
+    git::branch branch_local_master(repository_cloned.branch("master"));
 
-    for (git::remote& remote : cloned.remotes()) {
-        std::cout << remote.url() << std::endl;
-    }
+    repository_cloned.set_head(branch_local_master);
 
-     git::repository inited(git::init("/home/nick/Projects/fyrware/git/ignore/inited"));
+    git::remote remote_origin(repository_cloned.remote("origin"));
+
+    remote_origin.fetch();
+
+    git::branch branch_origin_master(remote_origin.branch("master"));
+
+    repository_cloned.merge(branch_origin_master);
 
     git::util::uninitialize();
 }

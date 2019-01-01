@@ -15,25 +15,30 @@ For that reason, I've decided to write an OOP-ish wrapper around libgit2 with C+
 ### how?
 ```cpp
 # include "git/clone.cpp"
+# include "git/commit.cpp"
+# include "git/init.cpp"
+# include "git/tree.cpp"
+# include "git/open.cpp"
+# include "git/remote.cpp"
 # include "git/repository.cpp"
 # include "git/util.cpp"
 
-namespace example {
-
-    void main () {
-        git::util::initialize();
-        
-        git::repository repository(git::clone("https://url/to/repository.git"));
-        
-        for (git::remote& remote : repository.remotes()) {
-            // ...
-        }
-        
-        git::util::uninitialize();
-    }
-}
-
 int main () {
-    example::main();
+    git::util::initialize();
+
+    git::repository repository_cloned(git::clone("https://address/to/repository.git", "/path/to/directory/"));
+    git::branch branch_local_master(repository_cloned.branch("master"));
+
+    repository_cloned.set_head(branch_local_master);
+
+    git::remote remote_origin(repository_cloned.remote("origin"));
+
+    remote_origin.fetch();
+
+    git::branch branch_origin_master(remote_origin.branch("master"));
+
+    repository_cloned.merge(branch_origin_master);
+
+    git::util::uninitialize();
 }
 ```
