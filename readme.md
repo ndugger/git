@@ -15,24 +15,3 @@ For that reason, I've decided to write an OOP-ish wrapper around libgit2 with C+
 ### how?
 [example/main.cpp](https://github.com/fyrware/git/blob/master/example/main.cpp)
 ![](https://i.imgur.com/BZfr4YM.png)
-
-```cpp
-int main () {
-    git::util::initialize();
-
-    git::repository repository_cloned(git::clone("https://address/to/repository.git", "/path/to/directory/"));
-    git::branch branch_local_master(repository_cloned.branch("master"));
-
-    repository_cloned.set_head(branch_local_master);
-
-    git::remote remote_origin(repository_cloned.remote("origin"));
-
-    remote_origin.fetch();
-
-    git::branch branch_origin_master(remote_origin.branch("master"));
-
-    repository_cloned.merge(branch_origin_master);
-
-    git::util::uninitialize();
-}
-```
