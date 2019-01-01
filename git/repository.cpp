@@ -74,7 +74,7 @@ namespace git {
             }
 
             git::branch branch (const std::string& name) {
-                return git::manager::lookup<git::branch>(git::manager::create<git::branch>(name, false), &repository_c_obj);
+                return git::manager::lookup<git::branch>(git::manager::create<git::branch>(name, false), &*repository_c_obj);
             }
 
             git::remote remote (const std::string& name) {

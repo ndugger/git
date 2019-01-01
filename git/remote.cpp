@@ -23,6 +23,7 @@ namespace git {
 
             remote& lookup (git_repository* c_repository) {
                 git_remote_lookup(&remote_c_obj, remote_c_repository, remote_name.c_str());
+                return *this;
             }
 
             git_remote** c_obj () {
@@ -44,7 +45,7 @@ namespace git {
 
             git::branch branch (const std::string& branch_name) {
                 git_repository* repo(git_remote_owner(remote_c_obj));
-                return git::manager::lookup<git::branch>(git::manager::create<git::branch>(name() + "/" + branch_name), &repo);
+                return git::manager::lookup<git::branch>(git::manager::create<git::branch>(name() + "/" + branch_name), &*repo);
             }
 
             void fetch () {
