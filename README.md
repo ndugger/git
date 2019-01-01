@@ -16,15 +16,20 @@ For that reason, I've decided to write an OOP-ish wrapper around libgit2 with C+
 ```cpp
 # include "git/clone.cpp"
 # include "git/repository.cpp"
+# include "git/util.cpp"
 
 namespace example {
 
     void main () {
+        git::util::initialize();
+        
         git::repository repository(git::clone("https://url/to/repository.git"));
         
         for (git::remote& remote : repository.remotes()) {
             // ...
         }
+        
+        git::util::uninitialize();
     }
 }
 
