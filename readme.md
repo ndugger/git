@@ -13,6 +13,7 @@ It's a good thing, mostly, but we want to ramp developers up for that; the deep 
 For that reason, I've decided to write an OOP-ish wrapper around libgit2 with C++ and its STL.
 
 ### how?
+[example/main.cpp](https://github.com/fyrware/git/blob/master/example/main.cpp)
 ![](https://i.imgur.com/BZfr4YM.png)
 
 ```cpp
