@@ -13,31 +13,26 @@
 
 namespace git {
 
-class commit : protected git::object {
+class commit : public git::object {
         friend class git::manager;
 
         private:
             git_commit* commit_c_obj;
-            const git_oid* commit_id;
             std::string commit_message;
 
         protected:
-            explicit commit (const std::string& message = "") : commit_c_obj(nullptr), commit_id(nullptr) { }
+            explicit commit (const std::string& message = "") : commit_c_obj(nullptr) { }
 
-            commit& lookup (git_repository* c_repository) {
-                git_commit_lookup(&commit_c_obj, c_repository, commit_id);
+            commit& lookup (git_repository** c_repository) {
+                git_commit_lookup(&commit_c_obj, *c_repository, git::manager::c_obj<git::id, git_oid*>(id()));
                 return *this;
             }
 
-            git_commit* c_obj () {
-                return commit_c_obj;
+            void* c_obj () override {
+                return &commit_c_obj;
             }
 
         public:
-            const git_oid** id () {
-                return &commit_id;
-            }
-
             std::string& message () {
                 return commit_message;
             }

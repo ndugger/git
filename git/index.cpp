@@ -2,18 +2,22 @@
 
 # include "git2/index.h"
 
+# include "git/manager.cpp"
+# include "git/object.cpp"
+
 namespace git {
 
-    class index {
+    class index : public git::object {
+        friend git::manager;
 
         private:
             git_index* index_c_obj;
 
-        public:
+        protected:
             explicit index () : index_c_obj(nullptr) { }
 
-            git_index* c_obj () {
-                return index_c_obj;
+            void* c_obj () {
+                return &index_c_obj;
             }
     };
 }

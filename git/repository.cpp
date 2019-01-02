@@ -40,7 +40,7 @@ namespace git {
         protected:
             explicit repository () : repository_c_obj(nullptr) { }
 
-            git_repository** c_obj () {
+            void* c_obj () override {
                 return &repository_c_obj;
             }
 
@@ -55,16 +55,16 @@ namespace git {
             }
 
             git::index checkout_index (git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
-                git::index index;
+                git::index index(git::manager::create<git::index>());
 
                 options.checkout_strategy = GIT_CHECKOUT_SAFE;
-                git_checkout_index(repository_c_obj, index.c_obj(), &options);
+                git_checkout_index(repository_c_obj, *git::manager::c_obj<git::index, git_index**>(index), &options);
 
                 return index;
             }
 
             git::tree checkout_tree (const std::string& name, git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
-                git::tree tree;
+                git::tree tree(git::manager::create<git::tree>());
 
                 options.checkout_strategy = GIT_CHECKOUT_SAFE;
                 git_revparse_single(tree.tree_ish(), repository_c_obj, name.c_str());
@@ -74,7 +74,10 @@ namespace git {
             }
 
             git::branch branch (const std::string& name) {
-                return git::manager::lookup<git::branch>(git::manager::create<git::branch>(name, false), &*repository_c_obj);
+                return git::manager::lookup<git::branch>(
+                    git::manager::create<git::branch>(name, false),
+                    git::manager::c_obj<git::repository, git_repository**>(*this)
+                );
             }
 
             git::remote remote (const std::string& name) {
@@ -97,7 +100,7 @@ namespace git {
                 git_annotated_commit_from_ref((git_annotated_commit**)&the_head[ 0 ], repository_c_obj, git::manager::c_obj<git::branch, git_reference*>(branch));
                 git_merge(repository_c_obj, the_head, 1, &options, &checkout_options);
 
-                git::commit commit_head(git::manager::lookup<git::commit>(git::manager::create<git::commit>(), repository_c_obj));
+                git::commit commit_head(git::manager::lookup<git::commit>(git::manager::create<git::commit>(), &repository_c_obj));
                 git::commit commit_new(git::manager::create<git::commit>("merged"));
                 git::signature signature_me(git::manager::create<git::signature>("name", "email@address"));
                 git::tree tree_new(git::manager::create<git::tree>());
@@ -106,10 +109,10 @@ namespace git {
                 git_checkout_index(repository_c_obj, the_index, &checkout_options);
                 git_index_update_all(the_index, nullptr, nullptr, nullptr);
                 git_index_write(the_index);
-                git_index_write_tree(*(tree_new.id()), the_index);
-                git_tree_lookup((git_tree**)tree_new.c_obj(), repository_c_obj, *(tree_new.id()));
+                git_index_write_tree(*git::manager::c_obj<git::id, git_oid**>(tree_new.id()), the_index);
+                git_tree_lookup(git::manager::c_obj<git::tree, git_tree**>(tree_new), repository_c_obj, *git::manager::c_obj<git::id, git_oid**>(tree_new.id()));
                 git_commit_create_v(
-                    (git_oid*)commit_new.id(),
+                    git::manager::c_obj<git::id, git_oid*>(commit_new.id()),
                     repository_c_obj,
                     branch.name().c_str(),
                     git::manager::c_obj<git::signature, git_signature*>(signature_me),

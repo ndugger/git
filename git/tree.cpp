@@ -3,28 +3,29 @@
 # include "git2/object.h"
 # include "git2/tree.h"
 
+# include "git/manager.cpp"
+# include "git/object.cpp"
+
 namespace git {
 
-    class tree {
+    class tree : public git::object {
+        friend git::manager;
 
         private:
             git_tree* tree_c_obj;
             git_oid* tree_id;
             git_object* tree_tree_ish;
 
-        public:
+        protected:
             explicit tree () : tree_c_obj(nullptr), tree_id(nullptr), tree_tree_ish(nullptr) { }
 
-            git_tree* c_obj () {
-                return tree_c_obj;
+            void* c_obj () override {
+                return &tree_c_obj;
             }
 
+        public:
             git_object** tree_ish () {
-                return &tree_tree_ish;
-            }
-
-            git_oid** id () {
-                return &tree_id;
+                return static_cast<git_object**>(git::object::c_obj());
             }
     };
 }

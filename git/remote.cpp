@@ -7,26 +7,26 @@
 
 # include "git/branch.cpp"
 # include "git/manager.cpp"
+# include "git/object.cpp"
 
 namespace git {
 
-    class remote {
+class remote : protected git::object {
         friend git::manager;
 
         private:
             git_remote* remote_c_obj;
-            git_repository* remote_c_repository;
             std::string remote_name;
 
         protected:
-            explicit remote (const std::string& name = "") : remote_c_obj(nullptr), remote_c_repository(nullptr), remote_name(name) { }
+            explicit remote (const std::string& name = "") : remote_c_obj(nullptr), remote_name(name) { }
 
-            remote& lookup (git_repository* c_repository) {
-                git_remote_lookup(&remote_c_obj, remote_c_repository, remote_name.c_str());
+            remote& lookup (git_repository** c_repository) {
+                git_remote_lookup(&remote_c_obj, *c_repository, remote_name.c_str());
                 return *this;
             }
 
-            git_remote** c_obj () {
+            void* c_obj () override {
                 return &remote_c_obj;
             }
 
@@ -45,7 +45,7 @@ namespace git {
 
             git::branch branch (const std::string& branch_name) {
                 git_repository* repo(git_remote_owner(remote_c_obj));
-                return git::manager::lookup<git::branch>(git::manager::create<git::branch>(name() + "/" + branch_name), &*repo);
+                return git::manager::lookup<git::branch>(git::manager::create<git::branch>(name() + "/" + branch_name), &repo);
             }
 
             void fetch () {

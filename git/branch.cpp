@@ -25,13 +25,13 @@ class branch : protected git::object {
         protected:
             explicit branch (const std::string& name, bool remote = true) : branch_c_obj(nullptr), branch_name(name), branch_remote(remote) { }
 
-            branch& lookup (git_repository*& c_repository) {
-                git_branch_lookup(&branch_c_obj, &*c_repository, branch_name.c_str(), branch_remote ? GIT_BRANCH_REMOTE : GIT_BRANCH_LOCAL);
+            branch& lookup (git_repository** c_repository) {
+                git_branch_lookup(&branch_c_obj, *c_repository, branch_name.c_str(), branch_remote ? GIT_BRANCH_REMOTE : GIT_BRANCH_LOCAL);
                 return *this;
             }
 
-            git_reference* c_obj () {
-                return branch_c_obj;
+            void* c_obj () override {
+                return &branch_c_obj;
             }
 
         public:

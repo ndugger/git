@@ -21,7 +21,7 @@ int main () {
 
     git::remote remote_origin(repository_cloned.remote("origin"));
 
-    remote_origin.fetch(); // TODO this is where it currently fails
+    remote_origin.fetch();
 
     git::branch branch_origin_master(remote_origin.branch("master"));
 
