@@ -14,4 +14,4 @@ For that reason, I've decided to write an OOP-ish wrapper around libgit2 with C+
 
 ### how?
 [example/main.cpp](https://github.com/fyrware/git/blob/master/example/main.cpp)
-![](https://i.imgur.com/BZfr4YM.png)
+![screenshot of code](https://i.imgur.com/YR59GEz.png)
