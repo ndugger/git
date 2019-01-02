@@ -25,7 +25,7 @@ int main () {
 
     git::branch branch_origin_master(remote_origin.branch("master"));
 
-    repository_cloned.merge(branch_origin_master);
+    repository_cloned.merge(branch_local_master, branch_origin_master);
 
     git::manager::clean_up();
 }

@@ -14,7 +14,7 @@ namespace git {
             git_oid* id_c_obj;
 
         protected:
-            explicit id () : id_c_obj(nullptr) { }
+            explicit id (git_oid* oid) : id_c_obj(oid) { }
 
             void* c_obj () {
                 return &id_c_obj;
@@ -26,18 +26,16 @@ namespace git {
 
         private:
             git_object* object_c_obj;
-            git::id object_id;
 
         protected:
-            explicit object () : object_c_obj(nullptr), object_id(git::manager::create<git::id>()) { }
+            explicit object () : object_c_obj(nullptr) { }
+
+            virtual const git_oid* c_id () {
+                return git_object_id(object_c_obj);
+            }
 
             virtual void* c_obj () {
                 return &object_c_obj;
-            }
-
-        public:
-            git::id& id () {
-                return object_id;
             }
     };
 }

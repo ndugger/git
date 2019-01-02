@@ -27,6 +27,10 @@ namespace git {
                 return object.lookup(arguments...);
             }
 
+            template <typename object_type> static git_oid** c_id (object_type& object) {
+                return object.c_id();
+            }
+
             template <typename object_type, typename c_object_type> static c_object_type c_obj (object_type& object) {
                 return static_cast<c_object_type>(object.c_obj());
             }
