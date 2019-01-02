@@ -24,8 +24,9 @@ int main () {
     remote_origin.fetch();
 
     git::branch branch_origin_master(remote_origin.branch("master"));
+    git::commit commit_merge(repository_cloned.merge(branch_local_master, branch_origin_master));
 
-    repository_cloned.merge(branch_local_master, branch_origin_master);
+    std::cout << commit_merge.message() << std::endl;
 
     git::manager::clean_up();
 }

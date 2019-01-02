@@ -130,11 +130,13 @@ namespace git {
                 git_index_write_tree(const_cast<git_oid*>(git_tree_id(*git::manager::c_obj<git::tree, git_tree**>(tree))), *git::manager::c_obj<git::index, git_index**>(index));
                 git_tree_lookup(git::manager::c_obj<git::tree, git_tree**>(tree), repository_c_obj, const_cast<git_oid*>(git_tree_id(*git::manager::c_obj<git::tree, git_tree**>(tree))));
 
-                git::commit commit_new(git::manager::create<git::commit>());
+                git::id commit_id(git::manager::create<git::id>());
                 git::signature signature(git::manager::create<git::signature>("name", "email@address"));
 
+                git_oid* commit_c_id(git::manager::c_obj<git::id, git_oid*>(commit_id));
+
                 git_commit_create_v(
-                    *git::manager::c_id<git::commit>(commit_new),
+                    commit_c_id,
                     repository_c_obj,
                     branch_into.name().c_str(),
                     *git::manager::c_obj<git::signature, git_signature**>(signature),
@@ -147,7 +149,11 @@ namespace git {
                     *git::manager::c_obj<git::commit, git_commit**>(commit_existing)
                 );
 
-                return commit_new;
+                return git::manager::lookup<git::commit>(
+                    git::manager::create<git::commit>(),
+                    &repository_c_obj,
+                    git::manager::c_obj<git::branch, git_reference**>(branch_into)
+                );
             }
     };
 }

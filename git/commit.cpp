@@ -20,15 +20,12 @@ class commit : public git::object {
             bool commit_annotated;
             git_commit* commit_c_obj;
             git_annotated_commit* commit_c_obj_annotated;
-            std::string commit_message;
 
         protected:
-
             explicit commit (bool annotated = false) :
                 commit_annotated(annotated),
                 commit_c_obj(nullptr),
-                commit_c_obj_annotated(nullptr),
-                commit_message("") { }
+                commit_c_obj_annotated(nullptr)  { }
 
             commit& lookup (git_repository** c_repository, git_reference** c_branch) {
                 if (commit_annotated) {
@@ -39,10 +36,6 @@ class commit : public git::object {
                 }
 
                 return *this;
-            }
-
-            const git_oid* c_id () override {
-                return git_commit_id(commit_c_obj);
             }
 
             void* c_obj () override {
@@ -59,8 +52,8 @@ class commit : public git::object {
                 return commit_annotated;
             }
 
-            std::string& message () {
-                return commit_message;
+            std::string message () {
+                return const_cast<char*>(git_commit_message(commit_c_obj));
             }
     };
 }

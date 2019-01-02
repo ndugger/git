@@ -11,10 +11,10 @@ namespace git {
         friend git::manager;
 
         private:
-            git_oid* id_c_obj;
+            git_oid id_c_obj;
 
         protected:
-            explicit id (git_oid* oid) : id_c_obj(oid) { }
+            explicit id () : id_c_obj() { }
 
             void* c_obj () {
                 return &id_c_obj;
@@ -29,10 +29,6 @@ namespace git {
 
         protected:
             explicit object () : object_c_obj(nullptr) { }
-
-            virtual const git_oid* c_id () {
-                return git_object_id(object_c_obj);
-            }
 
             virtual void* c_obj () {
                 return &object_c_obj;
