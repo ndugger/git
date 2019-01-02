@@ -133,10 +133,8 @@ namespace git {
                 git::id commit_id(git::manager::create<git::id>());
                 git::signature signature(git::manager::create<git::signature>("name", "email@address"));
 
-                git_oid* commit_c_id(git::manager::c_obj<git::id, git_oid*>(commit_id));
-
                 git_commit_create_v(
-                    commit_c_id,
+                    git::manager::c_obj<git::id, git_oid*>(commit_id),
                     repository_c_obj,
                     branch_into.name().c_str(),
                     *git::manager::c_obj<git::signature, git_signature**>(signature),
