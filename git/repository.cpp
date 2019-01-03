@@ -45,6 +45,10 @@ namespace git {
             }
 
         public:
+            bool exists () {
+                return repository_c_obj != nullptr;
+            }
+
             void set_head (git::branch branch) {
                 git_repository_set_head(repository_c_obj, branch.name().c_str());
             }
