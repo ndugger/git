@@ -2,6 +2,7 @@
 C++ Wrapper Around [libgit2](https://github.com/libgit2/libgit2)
 
 ### where?
+[grok](https://github.com/fyrware/grok) package manager
 ```
 grok use git
 ```
