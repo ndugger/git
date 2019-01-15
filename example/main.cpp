@@ -9,25 +9,20 @@
 # include "git/remote.cpp"
 # include "git/repository.cpp"
 # include "git/tree.cpp"
-# include "git/util.cpp"
 
 int main () {
     git::manager::init();
 
-    git::repository repository_cloned(git::clone("https://github.com/fyrware/git.git", "/home/nick/Projects/fyrware/git/ignore/git/"));
-    git::branch branch_local_master(repository_cloned.branch("master"));
+    git::repository repository(git::open("/home/nick/Projects/fyrware/git/"));
+    git::remote remote(repository.remote("origin"));
 
-    repository_cloned.set_head(branch_local_master);
+    remote.fetch();
 
-    git::remote remote_origin(repository_cloned.remote("origin"));
+    git::branch local(repository.branch("master"));
+    git::branch upstream(remote.branch("master"));
 
-    remote_origin.fetch();
-
-    git::branch branch_origin_master(remote_origin.branch("master"));
-
-    repository_cloned.merge(branch_local_master, branch_origin_master);
-
-    git::repository repository_opened(git::open("/home/nick/Projects/fyrware/git/ignore/git/"));
+    repository.set_head(local);
+    repository.merge(local, upstream);
 
     git::manager::clean_up();
 }

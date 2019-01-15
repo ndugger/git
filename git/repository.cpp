@@ -29,6 +29,10 @@
 # include "git/signature.cpp"
 # include "git/tree.cpp"
 
+namespace {
+    int git_repository_error = 0;
+}
+
 namespace git {
 
     class repository : protected git::object {
@@ -50,32 +54,32 @@ namespace git {
             }
 
             void set_head (git::branch branch) {
-                git_repository_set_head(repository_c_obj, branch.name().c_str());
+                git_repository_error = git_repository_set_head(repository_c_obj, branch.name().c_str());
             }
 
             void checkout_head (git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
                 options.checkout_strategy = GIT_CHECKOUT_SAFE;
-                git_checkout_head(repository_c_obj, &options);
+                git_repository_error = git_checkout_head(repository_c_obj, &options);
             }
 
             git::index checkout_index (git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
                 git::index index(git::manager::create<git::index>());
 
                 options.checkout_strategy = GIT_CHECKOUT_SAFE;
-                git_checkout_index(repository_c_obj, *git::manager::c_obj<git::index, git_index**>(index), &options);
+                git_repository_error = git_checkout_index(repository_c_obj, *git::manager::c_obj<git::index, git_index**>(index), &options);
 
                 return index;
             }
 
-//            git::tree checkout_tree (const std::string& name, git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
-//                git::tree tree(git::manager::create<git::tree>());
-//
-//                options.checkout_strategy = GIT_CHECKOUT_SAFE;
-//                git_revparse_single(tree.tree_ish(), repository_c_obj, name.c_str());
-//                git_checkout_tree(repository_c_obj, *(tree.tree_ish()), &options);
-//
-//                return tree;
-//            }
+            git::tree checkout_tree (const std::string& name, git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
+                git::tree tree(git::manager::create<git::tree>());
+
+                options.checkout_strategy = GIT_CHECKOUT_SAFE;
+                git_repository_error = git_revparse_single(git::manager::c_obj<git::tree, git_object**>(tree), repository_c_obj, name.c_str());
+                git_repository_error = git_checkout_tree(repository_c_obj, *(git::manager::c_obj<git::tree, git_object**>(tree)), &options);
+
+                return tree;
+            }
 
             git::branch branch (const std::string& name) {
                 return git::manager::lookup<git::branch>(
@@ -87,7 +91,7 @@ namespace git {
             git::remote remote (const std::string& name) {
                 git_strarray names({ nullptr });
 
-                git_remote_list(&names, repository_c_obj);
+                git_repository_error = git_remote_list(&names, repository_c_obj);
 
                 for (const std::string& string : std::vector<std::string>(names.strings, names.strings + names.count)) {
                     if (name == string) {
@@ -108,47 +112,52 @@ namespace git {
                     git::manager::c_obj<git::branch, git_reference**>(branch_from)
                 ));
 
-                git_merge(repository_c_obj, git::manager::c_obj<git::commit, const git_annotated_commit**>(commit_annotated), 1, &options, &checkout_options);
+                git_repository_error = git_merge(repository_c_obj, git::manager::c_obj<git::commit, const git_annotated_commit**>(commit_annotated), 1, &options, &checkout_options);
 
                 git::index index(git::manager::create<git::index>());
-                git::tree tree(git::manager::create<git::tree>());
+                // git::tree tree(git::manager::create<git::tree>());
 
-                git_repository_index(git::manager::c_obj<git::index, git_index**>(index), repository_c_obj);
-                git_checkout_index(repository_c_obj, *git::manager::c_obj<git::index, git_index**>(index), &checkout_options);
-                git_revparse_single((git_object**)git::manager::c_obj<git::tree, git_tree**>(tree), repository_c_obj, "HEAD~^{tree}");
+                git_checkout_options checkout_options_2 = GIT_CHECKOUT_OPTIONS_INIT;
+                checkout_options_2.checkout_strategy |= GIT_CHECKOUT_USE_THEIRS;
+
+                git_repository_error = git_repository_index(git::manager::c_obj<git::index, git_index**>(index), repository_c_obj); // TODO This is a lookup
+                git_repository_error = git_checkout_index(repository_c_obj, *git::manager::c_obj<git::index, git_index**>(index), &checkout_options_2);
 
                 git::commit commit_existing(git::manager::lookup<git::commit>(
-                        git::manager::create<git::commit>(),
-                        &repository_c_obj,
-                        git::manager::c_obj<git::branch, git_reference**>(branch_into)
+                    git::manager::create<git::commit>(),
+                    &repository_c_obj,
+                    git::manager::c_obj<git::branch, git_reference**>(branch_into)
                 ));
 
                 git::commit commit_incoming(git::manager::lookup<git::commit>(
-                        git::manager::create<git::commit>(),
-                        &repository_c_obj,
-                        git::manager::c_obj<git::branch, git_reference**>(branch_from)
+                    git::manager::create<git::commit>(),
+                    &repository_c_obj,
+                    git::manager::c_obj<git::branch, git_reference**>(branch_from)
                 ));
 
-                git_index_update_all(*git::manager::c_obj<git::index, git_index**>(index), nullptr, nullptr, nullptr);
-                git_index_write(*git::manager::c_obj<git::index, git_index**>(index));
-                git_index_write_tree(const_cast<git_oid*>(git_tree_id(*git::manager::c_obj<git::tree, git_tree**>(tree))), *git::manager::c_obj<git::index, git_index**>(index));
-                git_tree_lookup(git::manager::c_obj<git::tree, git_tree**>(tree), repository_c_obj, const_cast<git_oid*>(git_tree_id(*git::manager::c_obj<git::tree, git_tree**>(tree))));
+                git_oid new_tree_id;
+                git_tree* new_tree = nullptr;
+
+                git_repository_error = git_index_update_all(*git::manager::c_obj<git::index, git_index**>(index), nullptr, nullptr, nullptr);
+                git_repository_error = git_index_write(*git::manager::c_obj<git::index, git_index**>(index));
+                git_repository_error = git_index_write_tree(&new_tree_id, *git::manager::c_obj<git::index, git_index**>(index));
+                git_repository_error = git_tree_lookup(&new_tree, repository_c_obj, &new_tree_id); // TODO This is a lookup
 
                 git::id commit_id(git::manager::create<git::id>());
                 git::signature signature(git::manager::create<git::signature>("name", "email@address"));
 
-                git_commit_create_v(
+                git_repository_error = git_commit_create_v(
                     git::manager::c_obj<git::id, git_oid*>(commit_id),
                     repository_c_obj,
-                    branch_into.name().c_str(),
+                    git_reference_name(*git::manager::c_obj<git::branch, git_reference**>(branch_into)),
                     *git::manager::c_obj<git::signature, git_signature**>(signature),
                     *git::manager::c_obj<git::signature, git_signature**>(signature),
-                    nullptr,
+                    "UTF-8",
                     "branches merged",
-                    *git::manager::c_obj<git::tree, git_tree**>(tree),
+                    new_tree,
                     2,
-                    *git::manager::c_obj<git::commit, git_commit**>(commit_incoming),
-                    *git::manager::c_obj<git::commit, git_commit**>(commit_existing)
+                    *git::manager::c_obj<git::commit, git_commit**>(commit_existing),
+                    *git::manager::c_obj<git::commit, git_commit**>(commit_incoming)
                 );
 
                 return git::manager::lookup<git::commit>(

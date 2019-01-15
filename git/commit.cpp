@@ -19,17 +19,16 @@ class commit : public git::object {
         private:
             bool commit_annotated;
             git_commit* commit_c_obj;
-            git_annotated_commit* commit_c_obj_annotated;
+            git_annotated_commit* commit_c_obj_annotated[ 10 ];
 
         protected:
             explicit commit (bool annotated = false) :
                 commit_annotated(annotated),
-                commit_c_obj(nullptr),
-                commit_c_obj_annotated(nullptr)  { }
+                commit_c_obj(nullptr) { }
 
             commit& lookup (git_repository** c_repository, git_reference** c_branch) {
                 if (commit_annotated) {
-                    git_annotated_commit_from_ref(&commit_c_obj_annotated, *c_repository, *c_branch);
+                    git_annotated_commit_from_ref(&commit_c_obj_annotated[ 0 ], *c_repository, *c_branch);
                 }
                 else {
                     git_commit_lookup(&commit_c_obj, *c_repository, git_reference_target(*c_branch));
