@@ -1,5 +1,7 @@
-# git
+# git**
 C++ Wrapper Around [libgit2](https://github.com/libgit2/libgit2)
+
+**\*\*Currently broken fetch/merge operation**
 
 ### where?
 [grok](https://github.com/fyrware/grok) package manager
