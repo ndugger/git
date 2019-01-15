@@ -1,7 +1,6 @@
 # pragma once
 
 # include <array>
-# include <iostream>
 # include <iterator>
 # include <map>
 # include <string>
@@ -120,15 +119,11 @@ namespace git {
 
                 git::index index(git::manager::create<git::index>());
 
+                git_checkout_options checkout_options_2 = GIT_CHECKOUT_OPTIONS_INIT;
+                checkout_options_2.checkout_strategy |= GIT_CHECKOUT_USE_THEIRS;
 
-
-                git_index_conflict_iterator* conflict_iterator = nullptr;
-                git_repository_index(git::manager::c_obj<git::index, git_index**>(index), *git::manager::c_obj<git::repository, git_repository**>(*this));
-                git_checkout_options opt = GIT_CHECKOUT_OPTIONS_INIT;
-                opt.checkout_strategy |= GIT_CHECKOUT_USE_THEIRS;
-                git_checkout_index(*git::manager::c_obj<git::repository, git_repository**>(*this), *git::manager::c_obj<git::index, git_index**>(index), &opt);
-
-
+                git_repository_error = git_repository_index(git::manager::c_obj<git::index, git_index**>(index), repository_c_obj); // TODO This is a lookup
+                git_repository_error = git_checkout_index(repository_c_obj, *git::manager::c_obj<git::index, git_index**>(index), &checkout_options_2);
 
                 git::commit commit_existing(git::manager::lookup<git::commit>(
                     git::manager::create<git::commit>(),
