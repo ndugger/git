@@ -120,7 +120,7 @@ namespace git {
 
                 git::index index(git::manager::create<git::index>());
 
-
+                
 
                 git_index_conflict_iterator* conflict_iterator = nullptr;
                 git_repository_index(git::manager::c_obj<git::index, git_index**>(index), *git::manager::c_obj<git::repository, git_repository**>(*this));
