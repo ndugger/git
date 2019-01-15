@@ -120,30 +120,13 @@ namespace git {
 
                 git::index index(git::manager::create<git::index>());
 
-                
+
 
                 git_index_conflict_iterator* conflict_iterator = nullptr;
                 git_repository_index(git::manager::c_obj<git::index, git_index**>(index), *git::manager::c_obj<git::repository, git_repository**>(*this));
-                if (git_index_has_conflicts(*git::manager::c_obj<git::index, git_index**>(index))) {
-                    const git_index_entry* ancestor_out = nullptr;
-                    const git_index_entry* our_out = nullptr;
-                    const git_index_entry* their_out = nullptr;
-
-                    git_index_conflict_iterator_new(&conflict_iterator, *git::manager::c_obj<git::index, git_index**>(index));
-
-                    while (git_index_conflict_next(&ancestor_out, &our_out, &their_out, conflict_iterator) != GIT_ITEROVER) {
-                        if (ancestor_out) std::cout<< "ancestor: " << ancestor_out->path <<std::endl;
-                        if (our_out) std::cout<< "our: " << our_out->path <<std::endl;
-                        if (their_out) std::cout<< "their: " << their_out->path <<std::endl;
-                    }
-
-                    // git checkout --theirs <file>
-                    git_checkout_options opt = GIT_CHECKOUT_OPTIONS_INIT;
-                    opt.checkout_strategy |= GIT_CHECKOUT_USE_THEIRS;
-                    git_checkout_index(*git::manager::c_obj<git::repository, git_repository**>(*this), *git::manager::c_obj<git::index, git_index**>(index), &opt);
-
-                    git_index_conflict_iterator_free(conflict_iterator);
-                }
+                git_checkout_options opt = GIT_CHECKOUT_OPTIONS_INIT;
+                opt.checkout_strategy |= GIT_CHECKOUT_USE_THEIRS;
+                git_checkout_index(*git::manager::c_obj<git::repository, git_repository**>(*this), *git::manager::c_obj<git::index, git_index**>(index), &opt);
 
 
 
