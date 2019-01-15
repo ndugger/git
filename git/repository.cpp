@@ -54,27 +54,30 @@ namespace git {
             }
 
             void set_head (git::branch branch) {
-                git_repository_error = git_repository_set_head(repository_c_obj, branch.name().c_str());
+                git_repository_error = git_repository_set_head(repository_c_obj, git_reference_name(*git::manager::c_obj<git::branch, git_reference**>(branch)));
             }
 
             void checkout_head (git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
                 options.checkout_strategy = GIT_CHECKOUT_SAFE;
+
                 git_repository_error = git_checkout_head(repository_c_obj, &options);
             }
 
             git::index checkout_index (git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
+                options.checkout_strategy = GIT_CHECKOUT_SAFE;
+
                 git::index index(git::manager::create<git::index>());
 
-                options.checkout_strategy = GIT_CHECKOUT_SAFE;
                 git_repository_error = git_checkout_index(repository_c_obj, *git::manager::c_obj<git::index, git_index**>(index), &options);
 
                 return index;
             }
 
             git::tree checkout_tree (const std::string& name, git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
+                options.checkout_strategy = GIT_CHECKOUT_SAFE;
+
                 git::tree tree(git::manager::create<git::tree>());
 
-                options.checkout_strategy = GIT_CHECKOUT_SAFE;
                 git_repository_error = git_revparse_single(git::manager::c_obj<git::tree, git_object**>(tree), repository_c_obj, name.c_str());
                 git_repository_error = git_checkout_tree(repository_c_obj, *(git::manager::c_obj<git::tree, git_object**>(tree)), &options);
 
