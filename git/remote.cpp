@@ -11,7 +11,7 @@
 
 namespace git {
 
-class remote : protected git::object {
+    class remote : protected git::object {
         friend git::manager;
 
         private:
@@ -49,7 +49,8 @@ class remote : protected git::object {
             }
 
             void fetch () {
-                git_remote_fetch(remote_c_obj, nullptr, nullptr, nullptr);
+                git_fetch_options fetch_opts = GIT_FETCH_OPTIONS_INIT;
+                git_remote_fetch(remote_c_obj, nullptr, &fetch_opts, nullptr);
             }
     };
 }
