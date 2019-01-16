@@ -1,6 +1,8 @@
 # include <iostream>
 # include <string>
 
+# include "example/fetch_merge.cpp"
+
 # include "git/clone.cpp"
 # include "git/commit.cpp"
 # include "git/init.cpp"
@@ -11,18 +13,5 @@
 # include "git/tree.cpp"
 
 int main () {
-    git::manager::init();
-
-    git::repository repository(git::open("/home/nick/Projects/fyrware/git/"));
-    git::remote remote(repository.remote("origin"));
-
-    remote.fetch();
-
-    git::branch local(repository.branch("master"));
-    git::branch upstream(remote.branch("master"));
-
-    repository.set_head(local);
-    repository.merge(local, upstream);
-
-    git::manager::clean_up();
+    fetch_merge::main(); // c++ layer might actually be working -- try repo via https (no ssh -- need to recompile libgit2)
 }
