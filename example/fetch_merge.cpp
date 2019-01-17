@@ -53,6 +53,8 @@ namespace fetch_merge {
         error = git_branch_lookup(&local_master, rep, "master", GIT_BRANCH_LOCAL);
         error = git_repository_set_head(rep, git_reference_name(local_master));
 
+        // BEGIN MERGE OPERATION
+
         const git_annotated_commit* their_head[10];
         git_annotated_commit_from_ref((git_annotated_commit **)&their_head[0], rep, origin_master);
 

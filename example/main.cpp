@@ -13,5 +13,18 @@
 # include "git/tree.cpp"
 
 int main () {
-    fetch_merge::main(); // c++ layer might actually be working -- try repo via https (no ssh -- need to recompile libgit2)
+    git::manager::init();
+
+    git::repository repository(git::open("/home/nick/Projects/fyrware/git/delete_this/repository"));
+    git::remote origin(repository.remote("origin"));
+
+    origin.fetch();
+
+    git::branch master(repository.branch("master"));
+    git::branch origin_master(origin.branch("master"));
+
+    repository.set_head(master);
+    repository.merge(master, origin_master);
+
+    git::manager::clean_up();
 }

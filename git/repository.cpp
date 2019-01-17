@@ -54,7 +54,7 @@ namespace git {
             return repository_c_obj != nullptr;
         }
 
-        void set_head (git::branch branch) {
+        void set_head (git::branch& branch) {
             git_repository_error = git_repository_set_head(repository_c_obj, git_reference_name(*git::manager::c_obj<git::branch, git_reference**>(branch)));
         }
 
@@ -64,14 +64,11 @@ namespace git {
             git_repository_error = git_checkout_head(repository_c_obj, &options);
         }
 
-        git::index checkout_index (git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
-            options.checkout_strategy = GIT_CHECKOUT_SAFE;
-
-            git::index index(git::manager::create<git::index>());
+        void checkout_index (git::index& index, git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
+            options.checkout_strategy |= GIT_CHECKOUT_USE_THEIRS;
 
             git_repository_error = git_checkout_index(repository_c_obj, *git::manager::c_obj<git::index, git_index**>(index), &options);
 
-            return index;
         }
 
         git::tree checkout_tree (const std::string& name, git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT) {
@@ -118,17 +115,14 @@ namespace git {
 
             git_repository_error = git_merge(repository_c_obj, git::manager::c_obj<git::commit, const git_annotated_commit**>(commit_annotated), 1, &options, &checkout_options);
 
-            git::index index(git::manager::create<git::index>());
+            git::index index(git::manager::lookup<git::index>(git::manager::create<git::index>(), &repository_c_obj));
 
-
-
-            git_index_conflict_iterator* conflict_iterator = nullptr;
-            git_repository_index(git::manager::c_obj<git::index, git_index**>(index), *git::manager::c_obj<git::repository, git_repository**>(*this));
             if (git_index_has_conflicts(*git::manager::c_obj<git::index, git_index**>(index))) {
                 const git_index_entry* ancestor_out = nullptr;
                 const git_index_entry* our_out = nullptr;
                 const git_index_entry* their_out = nullptr;
 
+                git_index_conflict_iterator* conflict_iterator = nullptr;
                 git_index_conflict_iterator_new(&conflict_iterator, *git::manager::c_obj<git::index, git_index**>(index));
 
                 while (git_index_conflict_next(&ancestor_out, &our_out, &their_out, conflict_iterator) != GIT_ITEROVER) {
@@ -137,15 +131,10 @@ namespace git {
                     if (their_out) std::cout<< "their: " << their_out->path <<std::endl;
                 }
 
-                // git checkout --theirs <file>
-                git_checkout_options opt = GIT_CHECKOUT_OPTIONS_INIT;
-                opt.checkout_strategy |= GIT_CHECKOUT_USE_THEIRS;
-                git_checkout_index(*git::manager::c_obj<git::repository, git_repository**>(*this), *git::manager::c_obj<git::index, git_index**>(index), &opt);
+                checkout_index(index);
 
                 git_index_conflict_iterator_free(conflict_iterator);
             }
-
-
 
             git::commit commit_existing(git::manager::lookup<git::commit>(
                     git::manager::create<git::commit>(),
@@ -168,7 +157,7 @@ namespace git {
             git_repository_error = git_tree_lookup(&new_tree, repository_c_obj, &new_tree_id); // TODO This is a lookup
 
             git::id commit_id(git::manager::create<git::id>());
-            git::signature signature(git::manager::create<git::signature>("name", "email@address"));
+            git::signature signature(git::manager::create<git::signature>("fake user", "fake@email.address"));
 
             git_repository_error = git_commit_create_v(
                     git::manager::c_obj<git::id, git_oid*>(commit_id),
@@ -177,7 +166,7 @@ namespace git {
                     *git::manager::c_obj<git::signature, git_signature**>(signature),
                     *git::manager::c_obj<git::signature, git_signature**>(signature),
                     "UTF-8",
-                    "branches merged",
+                    "fake commit",
                     new_tree,
                     2,
                     *git::manager::c_obj<git::commit, git_commit**>(commit_existing),

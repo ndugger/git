@@ -16,7 +16,13 @@ namespace git {
         protected:
             explicit index () : index_c_obj(nullptr) { }
 
-            void* c_obj () {
+            index& lookup (git_repository** c_repository) {
+                git_repository_index(&index_c_obj, *c_repository);
+
+                return *this;
+            }
+
+            void* c_obj () override {
                 return &index_c_obj;
             }
     };
